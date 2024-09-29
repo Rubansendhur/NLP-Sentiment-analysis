@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Analysis Results</title>
+</head>
+<body>
+   <h1>Results for '{{ request.form["text"] }}'</h1>
+
+   <!-- Display Twitter Posts -->
+   <h2>Twitter Posts</h2>
+   <ul>
+   {% for post in twitter_posts %}
+       <li><strong>{{ post.username }}:</strong> {{ post.tweet_content }} <br> <small>Date: {{ post.date }}</small></li>
+   {% endfor %}
+   </ul>
+
+   <!-- Display Reddit Posts -->
+   <h2>Reddit Posts</h2>
+   <ul>
+   {% for post in reddit_posts.itertuples() %}
+       <li><strong>{{ post.Title }}:</strong> {{ post.Body }} <br> <small>Date: {{ post.Created }}</small></li>
+   {% endfor %}
+   </ul>
+</body>
+</html>
+
