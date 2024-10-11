@@ -1,0 +1,26 @@
+import pickle
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+
+# Function to load the model and vectorizer
+def load_model_and_vectorizer(model_path, vectorizer_path):
+    with open(model_path, 'rb') as model_file:
+        model = pickle.load(model_file)
+    with open(vectorizer_path, 'rb') as vectorizer_file:
+        vectorizer = pickle.load(vectorizer_file)
+    return model, vectorizer
+
+# Load the model and vectorizer
+model, vectorizer = load_model_and_vectorizer('finalized_model.pkl', 'finalized_vectorizer.pkl')
+
+# Example text for prediction
+texts = ["This is a great day!", "I am very sad today."]
+text_features = vectorizer.transform(texts)
+predictions = model.predict(text_features)
+
+# Using a loop with indexing to pair each text with its corresponding prediction
+for i in range(len(texts)):
+    text = texts[i]
+    prediction = predictions[i]
+    sentiment = 'Positive' if prediction == 1 else 'Negative'
+    print(f"Text: {text} -> Sentiment: {sentiment}")
