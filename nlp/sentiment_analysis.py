@@ -2,6 +2,7 @@ import pandas as pd
 import joblib
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
+import streamlit as st
 
 # Load model and vectorizer
 def load_model_and_vectorizer(model_path, vectorizer_path):
@@ -17,30 +18,33 @@ def predict_sentiment(texts, model, vectorizer):
     text_vector = vectorizer.transform(texts)
     return model.predict(text_vector)
 
-def analyze_sentiments(data_path, model_path, vectorizer_path):
-    # Load preprocessed data
-    data = pd.read_csv(data_path)
-    if 'processed_content' not in data.columns:
-        raise ValueError("The required column 'processed_content' is missing in the data.")
-
-    # Load model and vectorizer
-    model, vectorizer = load_model_and_vectorizer(model_path, vectorizer_path)
-    
-    # Ensure that there are no missing values in the 'processed_content' column
-    data = data.dropna(subset=['processed_content'])
-    
+def analyze_sentiments(data, model, vectorizer):
     # Predict sentiment
-    sentiments = predict_sentiment(data['processed_content'], model, vectorizer)
+    sentiments = predict_sentiment(data['processed_content'].tolist(), model, vectorizer)
     data['Sentiment'] = ['Positive' if pred == 1 else 'Negative' for pred in sentiments]
-    
-    return data
 
-# Example usage
-if __name__ == "__main__":
-    data_path = 'data\collected_data.csv'
-    model_path = 'models\finalized_model.pkl'
-    vectorizer_path = 'models\finalized_vectorizer.pkl'
+    # Calculate overall results
+    positive_count = data['Sentiment'].value_counts().get('Positive', 0)
+    negative_count = data['Sentiment'].value_counts().get('Negative', 0)
+    total_count = positive_count + negative_count
+
+    positive_percentage = (positive_count / total_count) * 100 if total_count > 0 else 0
+    negative_percentage = (negative_count / total_count) * 100 if total_count > 0 else 0
+
+    # Display overall results
+    result_df = pd.DataFrame({
+        'Sentiment': ['Positive', 'Negative'],
+        'Count': [positive_count, negative_count],
+        'Percentage': [positive_percentage, negative_percentage]
+    })
     
-    result_data = analyze_sentiments(data_path, model_path, vectorizer_path)
-    result_data.to_csv('path/to/save/sentiment_results.csv', index=False)
-    print("Sentiment analysis completed and results saved.")
+    st.write("Sentiment analysis completed.")
+    st.write(data[['processed_content', 'Sentiment']])
+    st.write("Overall Results:")
+    st.table(result_df)
+
+    # Optionally save the results
+    data[['processed_content', 'Sentiment']].to_csv('data/sentiment_results.csv', index=False)
+
+# The main function would be used within your Streamlit app and not here.
+# It should handle loading data, calling this analysis function, etc.

@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
+import os
 from get_data.reddit_test import fetch_reddit_data
 from nlp.preprocessing import preprocess_text
-from nlp.sentiment_analysis import load_model_and_vectorizer, predict_sentiment
+from nlp.sentiment_analysis import load_model_and_vectorizer, analyze_sentiments
 
 def main():
     st.title("Social Media Sentiment Analysis")
@@ -34,29 +35,23 @@ def main():
     if st.button("Analyze Sentiment"):
         try:
             # Load preprocessed data
-            data = pd.read_csv('data/collected_data.csv')
+            data_path = 'data/collected_data.csv'
+            if os.path.exists(data_path):
+                data = pd.read_csv(data_path)
 
-            if not data.empty:
-                # Load model and vectorizer
-                model, vectorizer = load_model_and_vectorizer('models/finalized_model.pkl', 'models/finalized_vectorizer.pkl')
+                if not data.empty:
+                    # Load model and vectorizer
+                    model, vectorizer = load_model_and_vectorizer('models/finalized_model.pkl', 'models/finalized_vectorizer.pkl')
 
-                # Ensure that there are no missing values in the 'processed_content' column
-                data = data.dropna(subset=['processed_content'])
+                    # Ensure that there are no missing values in the 'processed_content' column
+                    data = data.dropna(subset=['processed_content'])
 
-                # Predict sentiment
-                sentiments = predict_sentiment(data['processed_content'], model, vectorizer)
-                data['Sentiment'] = ['Positive' if pred == 1 else 'Negative' for pred in sentiments]
-
-                # Display results
-                st.write(data[['processed_content', 'Sentiment']])
-                st.success("Sentiment analysis completed.")
-
-                # Optionally save the results
-                data[['processed_content', 'Sentiment']].to_csv('data/sentiment_results.csv', index=False)
+                    # Perform sentiment analysis
+                    analyze_sentiments(data, model, vectorizer)
+                else:
+                    st.error("No preprocessed data available. Please fetch data first.")
             else:
-                st.error("No preprocessed data available. Please fetch data first.")
-        except FileNotFoundError:
-            st.error("The data file does not exist. Please fetch and preprocess data first.")
+                st.error("The data file does not exist. Please fetch and preprocess data first.")
         except Exception as e:
             st.error(f"An error occurred during sentiment analysis: {e}")
 
