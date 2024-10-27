@@ -6,7 +6,7 @@ from nlp.preprocessing import preprocess_text
 from nlp.sentiment_analysis import load_model_and_vectorizer, analyze_sentiments
 
 def main():
-    st.title("😐Sentiment Analysis FOr Brand and topic insights!☹️")
+    st.title("😐Sentiment Analysis For Brand and topic insights!☹️")
     query = st.text_input("Enter a topic or brand:")
 
     if st.button("Get Data"):
